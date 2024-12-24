@@ -34,7 +34,7 @@ Retrieval-Augmented Generation (RAG) is a technique that combines retrieval-base
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/yourusername/rag_medical.git
+    git clone https://github.com/kambojananya/carecenter_rag.git
     cd rag_medical
     ```
 
