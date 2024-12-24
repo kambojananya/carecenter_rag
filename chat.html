@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareCircle - Chatbot using RAG and FAISS</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+
+:root {
+  --chatbot-header-bg-color: #c2185b; /* Custom header background color */
+  --bot-bg-color: #971e4e;
+  --bot-text-color: #fff;
+  --user-bg-color: #f5f6f7;
+  --user-text-color: #000;
+  --user-time-text-color: #ccc;
+  --chatbot-custom-button-color: #be3c70; /* Custom button color */
+  --chatbot-custom-button-hover-color: #f14489; /* Custom button hover color */
+  --chatbot-custom-button-bgcolor: #f5f5f5; 
+  --font-size-standard: 1em; /* Standard font size for headings in message bubble */
+  --font-family-standard: europa,Trebuchet,Helvetica,"Helvetica Neue","Trebuchet MS",Verdana,sans-serif; /* Standard font family */
+}
+
+    .modal-dialog {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      width: 450px;
+      height: 650px;
+      margin: 0;
+      display: flex;
+    }
+    .chat-wrapper {
+      width: 400px;
+      border: 1px solid #ccc;
+    }
+    .chat-box {
+      padding: 10px;
+      font-family: var(--font-family-standard);
+      
+    }
+    .modal-header {
+      background-color: var(--chatbot-header-bg-color);
+      color: #fff; /* Header text color */
+    }
+    .message {
+      padding: 5px;
+      margin: 5px 0;
+    }
+    .user { text-align: right; }
+    .assistant { text-align: left; }
+    .custom-button {
+      color: var(--chatbot-custom-button-color); /* Text color */
+      border-color: var(--chatbot-custom-button-color); /* Border color */
+      font-size: 13px; /* Small font size */
+      font-weight: 600; /* Bold font weight */
+      background-color: var(--chatbot-custom-button-bgcolor);
+    }
+    .custom-button:hover {
+      background-color: var(--chatbot-custom-button-hover-color); /* Background color on hover */
+      border-color: var(--chatbot-custom-button-hover-color); /* Border color */
+      color: #fff; /* Text color on hover */
+      font-weight: 600; /* Bold font weight */
+    }
+    .custom-button:active {
+      opacity: 0.75;
+      background-color: var(--chatbot-custom-button-hover-color); /* Background color on hover */
+      border-color: var(--chatbot-custom-button-hover-color); /* Border color */
+      color: #fff; /* Text color on hover */
+      font-weight: 600; /* Bold font weight */
+    }
+    .rounded-circle {
+      border-radius: 50%;
+    }
+    .input-group {
+      border-radius: 30px; /* Group border radius */
+      overflow: hidden; /* Ensure inner elements respect border radius */
+      border: 1px solid #ccc;
+    }
+    .input-group input {
+      border: none; /* Remove default border */
+      box-shadow: none; /* Remove box shadow */
+      border-radius: 0; /* No radius to maintain consistency */
+    }
+    .input-group input:focus {
+      outline: none; /* Remove focus outline */
+    }
+    .chat-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1050; /* Higher than modal */
+      background-color: var(--chatbot-header-bg-color);
+      width: 50px;
+      height: 50px;
+      color: #fff;
+  }
+
+  .chat-button:hover {
+    background-color: var(--chatbot-header-bg-color);
+      width: 50px;
+      height: 50px;
+      color: #fff;
+     opacity: 0.8;
+  }
+
+    .message-bubble a, .message-bubble a:visited, .message-bubble a:hover, .message-bubble a:active {
+    color: #fff; /* Blue color for links */
+    text-decoration: underline; /* Remove underline */
+    }
+
+    .message-bubble h1, .message-bubble h2, .message-bubble h3, .message-bubble h4, .message-bubble h5, .message-bubble h6 {
+        font-size: var(--font-size-standard);
+}
+
+    .modal-header .btn-close {
+    color: #fff !important; /* White color for close button */
+    }
+
+    .hero-banner {
+      background-color: var(--chatbot-custom-button-color);
+      color: #fff;
+      padding: 50px 0;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .hero-banner .content {
+      flex: 1;
+      text-align: left;
+    }
+    .hero-banner .image {
+      flex: 1;
+      text-align: right;
+    }
+    .hero-banner img {
+      max-width: 100%;
+      height: auto;
+      animation: moveUp 2s ease-in-out;
+    }
+    @keyframes moveUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    .card-icon {
+      font-size: 50px;
+      color: var(--chatbot-custom-button-color);
+    }
+    .card-title{
+      padding: 10px 0;
+    }
+  </style>
+</head>
+<body>
+<!-- Hero Banner -->
+<div class="hero-banner">
+  <div class="container">
+  <div class="row">
+    <div class="col py-5 my-5">
+    
+    <h1>Welcome to CareCircle</h1>
+    <p>Providing thoughtful support, discussion, and case management for expecting mothers in low resource environments.</p>
+  </div>
+  <div class="col">
+  <div class="image">
+    <img src="bg-hero.svg" alt="CareCircle" style="max-width: 100%; height: auto;" />
+  </div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Section with 4 Cards -->
+<div class="container my-5">
+  <div class="row">
+    <div class="col-md-3 d-flex">
+      <div class="card text-center flex-fill">
+        <div class="card-body">
+          <i class="fas fa-user-md card-icon"></i>
+          <h5 class="card-title">Medical Support</h5>
+          <p class="card-text">Access medical support and guidance from licensed professionals.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 d-flex">
+      <div class="card text-center flex-fill">
+        <div class="card-body">
+          <i class="fas fa-comments card-icon"></i>
+          <h5 class="card-title">Counseling Services</h5>
+          <p class="card-text">Get counseling and emotional support during your pregnancy journey.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 d-flex">
+      <div class="card text-center flex-fill">
+        <div class="card-body">
+          <i class="fas fa-info-circle card-icon"></i>
+          <h5 class="card-title">Pregnancy Information</h5>
+          <p class="card-text">Find accurate and helpful information about pregnancy and childbirth.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 d-flex">
+      <div class="card text-center flex-fill">
+        <div class="card-body">
+          <i class="fas fa-utensils card-icon"></i>
+          <h5 class="card-title">Nutrition and Wellness</h5>
+          <p class="card-text">Learn about proper nutrition and wellness practices for a healthy pregnancy.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Chat Button -->
+<button id="chat-button" class="btn rounded-circle chat-button" data-bs-toggle="modal" data-bs-target="#chatModal">
+  <i class="fa-solid fa-comments"></i>
+</button>
+
+<!-- Chat Modal -->
+<div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="chatModalLabel">CareCircle Maternity Support Assistant</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <div class="chat-box" id="chat-box"></div>
+      </div>
+      <div class="modal-footer">
+        <div class="input-group">
+          <input type="text" id="message-input" class="form-control" placeholder="Type your message..." />
+          <button id="send-button" class="btn rounded-pill custom-button">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+      console.log("Initializing chat...");
+
+      // Initial history state with pre-defined assistant messages
+      let history = [
+        {
+          role: 'assistant',
+          content: "Hello! I'm the CareCircle Maternity Support Assistant. How can I help you today?",
+          time: getCurrentTime(),
+          buttons: [],
+          links: [],
+        },
+        {
+          role: 'assistant',
+          content: 'You can select from the following options or type your query:',
+          time: getCurrentTime(),
+                 buttons: [
+                      'Medical Support',
+                      'Counseling Services',
+                      'Pregnancy Information',
+                      'Nutrition and Wellness',
+                      'Parenting Advice',
+                    ],
+          links: [],
+        }
+      ];
+  
+      // Load history from localStorage if available
+      const storedHistory = JSON.parse(localStorage.getItem('chatHistory'));
+      if (storedHistory) {
+        history = storedHistory;
+      }
+
+      // Set expiration time for localStorage
+      const expirationTime = 24 * 60 * 60 * 1000; // 1 day in milliseconds
+      const lastStoredTime = localStorage.getItem('chatHistoryTime');
+      if (lastStoredTime && (Date.now() - lastStoredTime > expirationTime)) {
+        localStorage.removeItem('chatHistory');
+        localStorage.removeItem('chatHistoryTime');
+        history = []; // Reset history if expired
+      }
+
+      let loading = false;
+
+      function getCurrentTime() {
+        return new Date().toLocaleString('en-US', {
+          day: '2-digit',
+          month: 'short',
+          hour: 'numeric',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true,
+        });
+      }
+
+      function removeParagraphAndDivTags(content) {
+        return content.replace(/<\/?(p|div)[^>]*>/g, '');
+      }
+  
+      // Function to update the chat box
+      function updateChatBox() {
+        console.log("Updating chat box...");
+        $('#chat-box').empty(); // Clear the chat box
+
+        history.forEach(msg => {
+          const isAssistant = msg.role === 'assistant';
+          const icon = isAssistant ? 'fa-robot' : 'fa-user';
+          const bgColor = isAssistant ? 'var(--bot-bg-color)' : 'var(--user-bg-color)';
+          const textColor = isAssistant ? 'var(--bot-text-color)' : 'var(--user-text-color)';
+          const direction = isAssistant ? 'left' : 'right';
+          const senderName = isAssistant ? 'AI Assistant' : 'You';
+          const timeColor = isAssistant ? 'var(--bot-bg-color)' : 'var(--user-time-text-color)';
+
+          let messageHtml = `
+            <div class="d-flex justify-content-between">
+              ${isAssistant ? `<p class="small mb-1" style="color: ${bgColor};">${senderName}</p>` : ''}
+              <p class="small mb-1" style="color: ${timeColor};">${msg.time}</p>
+              ${!isAssistant ? `<p class="small mb-1 pe-2">${senderName}</p>` : ''}
+            </div>
+            <div class="d-flex flex-row justify-content-${direction === 'left' ? 'start' : 'end'} mb-4" style="align-items: flex-start;">
+              ${direction === 'left' ? `<i class="fa-solid ${icon} rounded-circle" style="width: 30px; height: 30px; padding: 5px; color: ${textColor}; background-color: ${bgColor}; margin-right: 10px;"></i>` : ''}
+              <div class="message-bubble small p-2 rounded-3" style="background-color: ${bgColor}; color: ${textColor};">${removeParagraphAndDivTags(msg.content)}</div>
+              ${direction === 'right' ? `<i class="fa-solid ${icon} rounded-circle" style="width: 30px; height: 30px; padding: 5px; color: ${textColor}; background-color: ${bgColor}; margin-left: 10px;"></i>` : ''}
+            </div>
+          `;
+
+          $('#chat-box').append(messageHtml);
+
+          // Render buttons if available
+          if (msg.buttons && msg.buttons.length > 0) {
+            let buttonsHtml = `<div class="mb-3"><div class="row g-2">`;
+            msg.buttons.forEach(button => {
+              buttonsHtml += `<div class="col-auto text-center">
+                                <button class="btn rounded-pill custom-button message-button" data-label="${button}">${button}</button>
+                              </div>`;
+            });
+            buttonsHtml += `</div></div>`;
+            $('#chat-box').append(buttonsHtml);
+          }
+        });
+
+        // Auto-scroll to the bottom
+        $('#modal-body').scrollTop($('#modal-body')[0].scrollHeight);
+      }
+
+      // Initial chat box render
+      updateChatBox();
+  
+      // Function to handle sending the message
+      function handleClick(messageContent) {
+        const msg = messageContent || $('#message-input').val();
+        if (msg === '' || loading) {
+          console.log("Message is empty or loading in progress. Ignoring input.");
+          return; // Ignore if no message or already loading
+        }
+
+        console.log("User message:", msg);
+        // Add user's message to history
+        history.push({ 
+          role: 'user', 
+          content: msg, 
+          time: getCurrentTime(), 
+          buttons: [], 
+          links: [] 
+        });
+        
+        // Update local storage
+        localStorage.setItem('chatHistory', JSON.stringify(history));
+        localStorage.setItem('chatHistoryTime', Date.now());
+
+        updateChatBox();
+        $('#message-input').val(''); // Clear the input field
+        loading = true;
+
+        // Simulate loading indicator
+        history.push({ role: 'assistant', content: 'Loading...', time: '', buttons: [], links: [] });
+        updateChatBox();
+
+        // Make the API call using jQuery
+        $.ajax({
+          url: 'http://localhost:5000/query',
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ query: msg, history: history }),
+          success: function(response) {
+            console.log("Response received:", response);
+            history.pop(); // Remove the loading message
+            history.push({
+              role: 'assistant',
+              content: response.content,
+              time: getCurrentTime(),
+              buttons: response.buttons || [],
+              links: response.links || []
+            });
+            loading = false;
+
+            // Update local storage after getting response
+            localStorage.setItem('chatHistory', JSON.stringify(history));
+            localStorage.setItem('chatHistoryTime', Date.now());
+
+            updateChatBox();
+          },
+          error: function() {
+            console.error("Error occurred during API call.");
+            history.pop(); // Remove the loading message
+            history.push({
+              role: 'assistant',
+              content: "I'm sorry, but I encountered an error. Please try again later.",
+              time: getCurrentTime(),
+              buttons: [],
+              links: []
+            });
+            loading = false;
+
+            // Update local storage after getting error
+            localStorage.setItem('chatHistory', JSON.stringify(history));
+            localStorage.setItem('chatHistoryTime', Date.now());
+
+            updateChatBox();
+          }
+        });
+      }
+  
+      // Click event for the send button
+      $('#send-button').on('click', function() {
+        console.log("Send button clicked.");
+        handleClick();
+      });
+  
+      // Enter key press event for the input field
+      $('#message-input').on('keypress', function(e) {
+        if (e.which == 13) { // Enter key pressed
+          console.log("Enter key pressed.");
+          handleClick();
+        }
+      });
+  
+      // Handle button clicks for predefined responses
+      $(document).on('click', '.message-button', function() {
+        const label = $(this).data('label');
+        console.log("Predefined button clicked:", label);
+        handleClick(label);
+      });
+    });
+</script>
+
+</body>
+</html>
