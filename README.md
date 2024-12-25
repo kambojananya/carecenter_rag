@@ -2,6 +2,8 @@
 
 This project implements Retrieval-Augmented Generation (RAG) using FAISS for a medical support application called CareCircle. The application provides accurate answers to user questions based on the organization's knowledge base.
 
+![Chat application using RAG](carecircle.gif)
+
 ## Table of Contents
 
 - [RAG Medical](#rag-medical)
