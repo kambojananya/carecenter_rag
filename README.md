@@ -31,6 +31,45 @@ Retrieval-Augmented Generation (RAG) is a technique that combines retrieval-base
 - Ensures patient confidentiality and compliance with HIPAA regulations.
 - Includes authentication to secure API endpoints.
 
+
+## RAG Medical Implementation
+
+This document explains the implementation of Retrieval-Augmented Generation (RAG) using FAISS in the `rag_medical.py` and `faiss_lib.py` files.
+
+### Overview
+
+The implementation involves several stages, from receiving a user request to returning a generated answer. The process is visualized in the following Mermaid diagram:
+
+```mermaid
+graph TD
+    A[User Request] -->|HTTP GET| B[Flask API Endpoint]
+    B -->|Authenticate| C[Token Validation]
+    C -->|Valid Token| D[Process Request]
+    C -->|Invalid Token| E[403 Forbidden]
+    D --> F[Load Data]
+    F --> G[Chunking]
+    G --> H[Embedding]
+    H --> I[Upsert in Vector Store]
+    I --> J[Query Embedding]
+    J --> K[Retrieval]
+    K --> L[Generate Answer]
+    L --> M[Return Response]
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#bbf,stroke:#333,stroke-width:2px
+    style C fill:#f96,stroke:#333,stroke-width:2px
+    style D fill:#bbf,stroke:#333,stroke-width:2px
+    style E fill:#f66,stroke:#333,stroke-width:2px
+    style F fill:#bbf,stroke:#333,stroke-width:2px
+    style G fill:#bbf,stroke:#333,stroke-width:2px
+    style H fill:#bbf,stroke:#333,stroke-width:2px
+    style I fill:#bbf,stroke:#333,stroke-width:2px
+    style J fill:#bbf,stroke:#333,stroke-width:2px
+    style K fill:#bbf,stroke:#333,stroke-width:2px
+    style L fill:#bbf,stroke:#333,stroke-width:2px
+    style M fill:#9f9,stroke:#333,stroke-width:2px
+```
+
 ## Installation
 
 1. Clone the repository:
