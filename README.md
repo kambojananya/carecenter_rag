@@ -36,7 +36,7 @@ Retrieval-Augmented Generation (RAG) is a technique that combines retrieval-base
 
 This document explains the implementation of Retrieval-Augmented Generation (RAG) using FAISS in the `rag_medical.py` and `faiss_lib.py` files.
 
-### Overview
+### Flask Implementation Diagram
 
 The implementation involves several stages, from receiving a user request to returning a generated answer. The process is visualized in the following Mermaid diagram:
 
@@ -70,6 +70,32 @@ graph LR
     style L fill:#bbf,stroke:#333,stroke-width:2px
     style M fill:#bbf,stroke:#333,stroke-width:2px
     style N fill:#9f9,stroke:#333,stroke-width:2px
+```
+
+
+### RAG Process Diagram
+
+
+```mermaid
+graph LR
+    A[Load Data] --> B[Chunking]
+    B --> C[Embedding]
+    C --> D[Upsert in Vector Store]
+    E[Query] --> F[Query Embedding]
+    F --> D
+    D --> G[Retrieval]
+    G --> H[Generate Answer]
+    H --> I[Return Response]
+
+    style A fill:#bbf,stroke:#333,stroke-width:2px
+    style B fill:#bbf,stroke:#333,stroke-width:2px
+    style C fill:#bbf,stroke:#333,stroke-width:2px
+    style D fill:#bbf,stroke:#333,stroke-width:2px
+    style E fill:#f9f,stroke:#333,stroke-width:2px
+    style F fill:#bbf,stroke:#333,stroke-width:2px
+    style G fill:#bbf,stroke:#333,stroke-width:2px
+    style H fill:#bbf,stroke:#333,stroke-width:2px
+    style I fill:#9f9,stroke:#333,stroke-width:2px
 ```
 
 ## Installation
