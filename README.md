@@ -41,7 +41,7 @@ This document explains the implementation of Retrieval-Augmented Generation (RAG
 The implementation involves several stages, from receiving a user request to returning a generated answer. The process is visualized in the following Mermaid diagram:
 
 ```mermaid
-graph TD
+graph LR
     A[User Request] -->|HTTP GET| B[Flask API Endpoint]
     B -->|Authenticate| C[Token Validation]
     C -->|Valid Token| D[Process Request]
@@ -50,10 +50,11 @@ graph TD
     F --> G[Chunking]
     G --> H[Embedding]
     H --> I[Upsert in Vector Store]
-    I --> J[Query Embedding]
-    J --> K[Retrieval]
-    K --> L[Generate Answer]
-    L --> M[Return Response]
+    J[Query] --> K[Query Embedding]
+    K --> I
+    I --> L[Retrieval]
+    L --> M[Generate Answer]
+    M --> N[Return Response]
 
     style A fill:#f9f,stroke:#333,stroke-width:2px
     style B fill:#bbf,stroke:#333,stroke-width:2px
@@ -64,11 +65,11 @@ graph TD
     style G fill:#bbf,stroke:#333,stroke-width:2px
     style H fill:#bbf,stroke:#333,stroke-width:2px
     style I fill:#bbf,stroke:#333,stroke-width:2px
-    style J fill:#bbf,stroke:#333,stroke-width:2px
+    style J fill:#f9f,stroke:#333,stroke-width:2px
     style K fill:#bbf,stroke:#333,stroke-width:2px
     style L fill:#bbf,stroke:#333,stroke-width:2px
-    style M fill:#9f9,stroke:#333,stroke-width:2px
-```
+    style M fill:#bbf,stroke:#333,stroke-width:2px
+    style N fill:#9f9,stroke:#333,stroke-width:2px
 
 ## Installation
 
